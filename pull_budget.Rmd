@@ -1,0 +1,78 @@
+---
+title: "pull budget data"
+author: "John D. Smith"
+date: "3/27/2017"
+output: html_document
+
+---
+```{r}
+library(stringr)
+library(tidyverse)
+library(lubridate)
+library(tidyr)
+library(jsonlite)
+library(hrbrthemes)
+source("~/Rfunctions/setup_my_google.R")
+source("~/Rfunctions/make_dd.R")
+# source("https://raw.githubusercontent.com/smithjd/Rfunctions/master/setup_my_google.R")
+# source("https://raw.githubusercontent.com/smithjd/Rfunctions/master/make_dd.R")
+
+```
+ "fund_center_code": "PSCO000001",
+        "fund_code": "GENERAL",
+        "functional_area_code": "LACOAS",
+        "object_code": "EMS",
+        "fund_center_name": "Commissioner of Public Safety",
+        "fund_name": "General Fund",
+        "functional_area_name": "Commissioner's Office",
+        "accounting_object_name": "External Materials and Services",
+        "service_area_code": "LA",
+        "program_code": "LACO",
+        "sub_program_code": "LACOAS",
+        "fund_center": "PSCO000001",
+        "division_code": "PSCO",
+        "bureau_code": "PS",
+        "bureau_name": "Commissioner of Public Safety",
+        "fiscal_year": "2015-16",
+        "amount": 12251
+
+
+```{r}
+cost_url <- file("http://hacko-integration-658279555.us-west-2.elb.amazonaws.com/budget/code/")
+cost_raw <- read_file(cost_url)
+cost_df <- fromJSON(cost_raw)
+```
+get history data
+```{r}
+# ps_15 <- fromJSON("http://hacko-integration-658279555.us-west-2.elb.amazonaws.com/budget/history/?fiscal_year=2015-16&bureau_code=PS")
+ps_15 <- fromJSON("http://hacko-integration-658279555.us-west-2.elb.amazonaws.com/budget/history/?bureau_code=PS")
+
+```
+Look at all fund transfers for all years FNDXFER
+```{r}
+fund_transfer <- fromJSON("http://hacko-integration-658279555.us-west-2.elb.amazonaws.com/budget/history/?object_code=FNDXFER") %>% filter(amount != 0)
+
+ggplot(fund_transfer, aes(fiscal_year, amount)) +
+  geom_bar(stat = "identity") +
+  theme_ipsum()
+
+ggplot(fund_transfer, aes(bureau_name, amount)) +
+  geom_bar(stat = "identity", aes(fill = fiscal_year)) +
+   coord_flip() +
+   theme_ipsum()
+```
+
+Look at all fund transfers for all years PERSONAL
+```{r}
+peronsal <- fromJSON("http://hacko-integration-658279555.us-west-2.elb.amazonaws.com/budget/history/?object_code=EMS") %>% filter(amount != 0)
+
+ggplot(personal, aes(fiscal_year, amount)) +
+  geom_bar(stat = "identity") +
+  theme_ipsum()
+
+ggplot(personal, aes(bureau_name, amount)) +
+  geom_bar(stat = "identity", aes(fill = fiscal_year)) +
+   coord_flip() +
+   theme_ipsum()
+```
+
