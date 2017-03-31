@@ -75,9 +75,4 @@ ggplot(personal, aes(bureau_name, amount)) +
    coord_flip() +
    theme_ipsum()
 ```
-Browse the whole dataset
-```{r}
-> library(readr)
-> dataset <- read_csv("./data/HackOregon_hx_budget_data_ASV2_transformed.csv")
-```
 
