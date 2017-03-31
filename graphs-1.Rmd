@@ -1,0 +1,85 @@
+---
+title: "graphs-1"
+author: "John D. Smith"
+date: "3/30/2017"
+output: html_document
+---
+Setup
+```{r}
+
+library(stringr)
+library(tidyverse)
+library(lubridate)
+library(tidyr)
+library(jsonlite)
+library(hrbrthemes)
+library(readr)
+library(scales)
+```
+Browse the whole dataset
+
+```{r}
+# drop lines with zero amounts goes for 84,340 records to 35,978  
+#   (more than half of the records are dross)
+
+budget_history <- read_csv("./data/HackOregon_hx_budget_data_ASV2_transformed.csv") %>% 
+  filter(amount != 0)
+```
+list fund_codes
+```{r}
+budget_history %>% count(fund_code)
+budget_history %>% count(accounting_object_name)
+
+```
+
+Personnel costs
+```{r}
+budget_history %>% 
+  filter(object_code == "PERSONAL") %>% 
+  mutate(amount = amount / 1000000) %>% 
+  ggplot(aes(fiscal_year, amount)) +
+  scale_y_continuous(labels = comma) +
+  geom_bar(stat = "identity") +
+   coord_flip() +
+  facet_wrap(~bureau_name) +
+   labs(x = "Fiscal\nYear", y = "Millions of Dollars",
+       title = "Personnel Budget by Bureau and Fiscal-Year"
+       ) +
+   theme_ipsum()
+
+```
+Personnel costs
+```{r}
+budget_history %>% 
+  filter(object_code == "ENDBAL") %>% 
+  mutate(amount = amount / 1000000) %>% 
+  ggplot(aes(fiscal_year, amount)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = comma) +
+  coord_flip() +
+  facet_wrap(~bureau_name) +
+   labs(x = "Fiscal\nYear", y = "Millions of Dollars",
+       title = "Year-End Fund Balance by Fiscal Year"
+       ) +
+   theme_ipsum()
+
+```
+
+Pension Expenditures
+```{r}
+budget_history %>% 
+  filter(fund_code == "ENTERPRISE") %>% 
+  mutate(amount = amount / 1000000) %>% 
+  ggplot(aes(fiscal_year, amount)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = comma) +
+  coord_flip() +
+  facet_wrap(~bureau_name) +
+   labs(x = "Fiscal\nYear", y = "Millions of Dollars",
+       title = "Enterprise"
+       ) +
+   theme_ipsum()
+
+```
+
+
