@@ -23,7 +23,10 @@ Browse the whole dataset
 #   (more than half of the records are dross)
 
 budget_history <- read_csv("./data/HackOregon_hx_budget_data_ASV2_transformed.csv") %>% 
-  filter(amount != 0)
+  filter(amount != 0) %>% 
+  mutate(    #parse 2015-16
+    fy = paste0(str_sub(fiscal_year,3,4), "/", str_sub(fiscal_year,7,7))
+    )
 ```
 list fund_codes
 ```{r}
@@ -34,25 +37,33 @@ budget_history %>% count(accounting_object_name)
 
 Personnel costs
 ```{r}
-budget_history %>% 
+p <- budget_history %>% 
   filter(object_code == "PERSONAL") %>% 
-  mutate(amount = amount / 1000000) %>% 
-  ggplot(aes(fiscal_year, amount)) +
+  mutate(
+    amount = amount / 1000000
+         ) %>% 
+  ggplot(aes(fy, amount)) +
+  # ggplot(aes(fiscal_year, amount)) +
   scale_y_continuous(labels = comma) +
   geom_bar(stat = "identity") +
-   coord_flip() +
+   # coord_flip() +
   facet_wrap(~bureau_name) +
    labs(x = "Fiscal\nYear", y = "Millions of Dollars",
        title = "Personnel Budget by Bureau and Fiscal-Year"
        ) +
    theme_ipsum()
 
+p
+
+ ggsave(paste0("Personnel-by-bureau-n-FY.png"), plot = p,
+         width = 11, height = 8)
 ```
-Personnel costs
+Year end Balances
 ```{r}
-budget_history %>% 
+p <- budget_history %>% 
   filter(object_code == "ENDBAL") %>% 
   mutate(amount = amount / 1000000) %>% 
+  
   ggplot(aes(fiscal_year, amount)) +
   geom_bar(stat = "identity") +
   scale_y_continuous(labels = comma) +
@@ -62,12 +73,14 @@ budget_history %>%
        title = "Year-End Fund Balance by Fiscal Year"
        ) +
    theme_ipsum()
-
+p
+ggsave(paste0("Year-end-balance-by-bureau-n-FY.png"), plot = p,
+         width = 11, height = 8)
 ```
 
-Pension Expenditures
+Enterprise fund code
 ```{r}
-budget_history %>% 
+p <- budget_history %>% 
   filter(fund_code == "ENTERPRISE") %>% 
   mutate(amount = amount / 1000000) %>% 
   ggplot(aes(fiscal_year, amount)) +
@@ -76,9 +89,14 @@ budget_history %>%
   coord_flip() +
   facet_wrap(~bureau_name) +
    labs(x = "Fiscal\nYear", y = "Millions of Dollars",
-       title = "Enterprise"
+       title = "Enterprise",
+       subtitle = "Could this be revenue from self-funding parts of the City's budget?"
        ) +
    theme_ipsum()
+
+p
+ggsave(paste0("enterprise-by-bureau-n-FY.png"), plot = p,
+         width = 11, height = 8)
 
 ```
 
